@@ -4,10 +4,13 @@ import pyjson5 as json
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 
+# Provider: StreamingCommunityZ
+
 '''
 Supports:
 https://streamingcommunityz.info/
-https://vixcloud.co/
+https://streamingcommunityz.love/
+https://vixcloud.co
 '''
 
 class Colors:
@@ -23,7 +26,7 @@ class Colors:
 
 
 # Constants
-base_url = 'https://streamingcommunityz.info/it/watch/12704'
+base_url = 'https://streamingcommunityz.love/it/watch/12704'
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
 default_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(base_url))
 headers = {
