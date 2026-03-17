@@ -1,15 +1,19 @@
-import requests
-from bs4 import BeautifulSoup
-import json
 import re
-import ast
+import json
+import base64
+import requests
+from Crypto.Cipher import AES
 from urllib.parse import urlparse
+
 
 '''
 Supports:
 https://filemoon.to/
-https://2glho.org/
 '''
+
+# ⚠️ Uses reference from https://github.com/Gujal00/ResolveURL
+# Credits to original author — please support them ⭐
+
 
 class Colors:
     header = '\033[95m'
@@ -23,67 +27,66 @@ class Colors:
     underline = '\033[4m'
 
 # Constants
-base_url = "https://filemoon.to/e/b0ypyzt8ewqo"
+base_url = "https://filemoon.to/e/obj59dnrqu8x/_Toonworld4all__Spy_x_Family_S01E01_1080p_x265_10bit_BDRip_Multi_Audio_ESub"
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36"
 parsed_url = urlparse(base_url)
-default_domain = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+default_domain = f"{parsed_url.scheme}://{parsed_url.netloc}"
 headers = {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept": "*/*",
     "Referer": default_domain,
-    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
-    "sec-ch-ua": "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\"132\"",
-    "sec-ch-ua-mobile": "?1",
-    "sec-ch-ua-platform": "\"Android\"",
-    "Sec-Fetch-Dest": "iframe",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "cross-site",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1",
+    "X-Embed-Parent": base_url,
     "User-Agent": user_agent
 }
 
 # Utility Functions
-# Base-36 conversion helper function
-def to_base_36(n):
-    return '' if n == 0 else to_base_36(n // 36) + "0123456789abcdefghijklmnopqrstuvwxyz"[n % 36]
-
-# Replace placeholders with corresponding values
-def unpack(p,a,c,k,e,d):
-    for i in range(c):
-        if k[c - i - 1]:
-            p = re.sub(r'\b' + to_base_36(c - i - 1) + r'\b', k[c - i - 1], p)
-    return p
-
-# Fetch initial response
-response = requests.get(base_url, headers=headers).text
+''' Pad and decode URL-safe Base64 '''
+def b64_url_decode(v):
+    v = v.replace('-', '+').replace('_', '/')
+    return base64.b64decode(v + '=' * (-len(v) % 4))
 
 # Fetch and parse the iframe URL
-soup = BeautifulSoup(response, 'html.parser')
-iframe_url = soup.select_one('iframe')['src']
+code = re.search(r'\/e\/(.*?)\/', base_url).group(1)
+response = requests.get(f'{default_domain}/api/videos/{code}/embed/details', headers=headers).json()
 
-# Get iframe content and procced for extraction
-response = requests.get(iframe_url, headers=headers).text
-soup = BeautifulSoup(response, 'html.parser')
+# Get embed iframe URL
+embed_url = response.get('embed_frame_url')
+parsed_url = urlparse(embed_url)
+domain = f'https://{parsed_url.netloc}'
 
-js_code = next((script.string for script in soup.find_all('script') if script.string and "eval(function(p,a,c,k,e,d)" in script.string), "")
+# Get encrypted streaming data
+response = requests.get(f'{domain}/api/videos/{code}/embed/playback', headers=headers).json()
 
-# Extract and clean the JS code
-encoded_packed = re.sub(r"eval\(function\([^\)]*\)\{[^\}]*\}\(|.split\('\|'\)\)\)", '', js_code)
-data = ast.literal_eval(encoded_packed)
+# Get encryption params
+encryption_info = response.get('playback')
+ciphertext_b64 = encryption_info.get('payload')
+key_parts = encryption_info.get('key_parts')
+iv_b64 = encryption_info.get('iv')
 
-# Extract values from packed data and decode
-p,a,c,k,e,d = data[0], int(data[1]), int(data[2]), data[3].split('|'), None, None
+# Convert encryption params to bytes
+ciphertext = b64_url_decode(ciphertext_b64)
+key = b''.join(b64_url_decode(p) for p in key_parts)
+iv = b64_url_decode(iv_b64)
 
-decoded_data = unpack(p,a,c,k,e,d)
+# Parse auth tag and ciphertext
+ciphertext_data = ciphertext[:-16]
+tag = ciphertext[-16:]
+
+# Decrypt streaming data
+cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
+plaintext = cipher.decrypt_and_verify(ciphertext_data, tag)
+
+# Get streaming info as json
+streaming_info = json.loads(plaintext)
+sources = streaming_info.get('sources')
 
 # Get Video URL
-video_url = re.search(r'file:"([^"]+)', decoded_data).group(1)
+video_url = sources[0].get('url')
 
 # Print Results
 print("\n" + "#"*25 + "\n" + "#"*25)
 print(f"Captured URL: {Colors.okgreen}{video_url}{Colors.endc}")
 print("#"*25 + "\n" + "#"*25)
 print(f"{Colors.warning}### Use these headers to access the URL")
-print(f"{Colors.okcyan}Referer:{Colors.endc} {default_domain}")
+print(f"{Colors.okcyan}Referer:{Colors.endc} {domain}")
 print(f"{Colors.okcyan}User-Agent:{Colors.endc} {user_agent}")
 print("\n")
