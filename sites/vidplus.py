@@ -30,7 +30,7 @@ class Colors:
 
 
 # Constants
-base_url = "https://player.vidplus.to/embed/movie/587412?server=1"
+base_url = "https://player.vidplus.to/embed/movie/799882?autoplay=true&download=true"
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
 default_domain = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(base_url))
 headers = {
