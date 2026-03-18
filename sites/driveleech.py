@@ -1,7 +1,11 @@
+import sys
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
-import sys
+
+
+# Provider: MoviesMod
+
 
 '''
 Supports:
@@ -21,7 +25,7 @@ class Colors:
     underline = '\033[4m'
 
 # Constants
-base_url = "https://driveseed.org/file/IkA5nabe0swlrzOplUMT"
+base_url = "https://driveseed.org/file/7wxHAr0bCy"
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 headers = {
     "Referer": "https://driveleech.org",
@@ -41,7 +45,6 @@ anchor_link = anchor.get('href')
 redirect_url = requests.get(anchor_link, headers=headers, allow_redirects = False).headers.get('Location')
 
 # Extract video URL
-
 video_url = redirect_url.split('?url=')[-1]
 
 # Print results
