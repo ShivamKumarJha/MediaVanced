@@ -1,8 +1,7 @@
+import json
 import requests
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
-import binascii
-import json
 
 '''
 Supports:
