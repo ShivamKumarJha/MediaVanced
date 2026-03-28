@@ -1,3 +1,4 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
@@ -6,8 +7,6 @@ from urllib.parse import urlparse
 '''
 Supports:
 https://megacloud.blog/
-https://rapid-cloud.co/
-https://hianimes.to/
 '''
 
 # @Megacloud, @VideoStr || Love you guys! ❤️
@@ -24,8 +23,8 @@ class Colors:
     underline = '\033[4m'
 
 # Constants
-provider_url = 'https://nine.mewcdn.online/ajax/episode/sources?id=1333688&type=sub-16/03/2026%206:00'
-base_url = requests.get(provider_url).json()['link'] # https://rapid-cloud.co/embed-2/v2/e-1/<VIDEO_ID>?z=&_debug=true
+provider_url = 'https://aniwatchtv.to/ajax/v2/episode/sources?id=1400145'
+base_url = requests.get(provider_url).json()['link'] # https://megacloud.blog/embed-2/v3/e-1/<VIDEO_ID>?k=1&autoPlay=1&oa=0&asi=1
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
 parsed_url = urlparse(base_url)
 default_domain = f"{parsed_url.scheme}://{parsed_url.netloc}/"
@@ -41,13 +40,17 @@ response = requests.get(base_url, headers=headers).text
 soup = BeautifulSoup(response, 'html.parser')
 
 # Get file ID
-video_tag = soup.select_one('#vidcloud-player')
+video_tag = soup.select_one('#megacloud-player')
 if not video_tag:
     exit(print(f'{Colors.fail}Looks like URL expired!{Colors.endc}'))
 file_id = video_tag['data-id']
 
+# Get Nonce
+match = re.search(r'\b[a-zA-Z0-9]{48}\b', response) or re.search(r'\b([a-zA-Z0-9]{16})\b.*?\b([a-zA-Z0-9]{16})\b.*?\b([a-zA-Z0-9]{16})\b', response)
+nonce = ''.join(match.groups()) if match and match.lastindex == 3 else match.group() if match else None
+
 # Get streaming data
-response = requests.get(f'{default_domain}/embed-2/v2/e-1/getSources?id={file_id}', headers=headers).json()
+response = requests.get(f'{default_domain}/embed-2/v3/e-1/getSources?id={file_id}&_k={nonce}', headers=headers).json()
 video_url = response.get('sources')[0].get('file')
 
 # Print results
