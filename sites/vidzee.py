@@ -29,7 +29,7 @@ class Colors:
 base_url = 'https://player.vidzee.wtf/embed/movie/155'
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
 default_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(base_url))
-secret = "pleasedontscrapemesaywallahi"
+secret = "9b7e3d1a4f6c2e8d0a5f1c7b3e9d4a6f"
 headers = {
     'Referer': default_domain,
     'User-Agent': user_agent
