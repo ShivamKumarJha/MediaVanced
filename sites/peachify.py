@@ -27,7 +27,7 @@ class Colors:
 base_url = 'https://peachify.top/embed/tv/93405/1/1'
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
 default_domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(base_url))
-decryption_key_hex = "a8f2a1b5e9c470814f6b2c3a5d8e7f9c1a2b3c4d5e3f7a8b8cad1e2d0a4d5c5b"
+decryption_key_hex = "a8f2a1b5e9c470814f6b2c3a5d8e7f9c1a2b3c4d5e3f7a8b8cad1e2d0a4d5c5d"
 streaming_servers = [
     {
         "label": "Iron",
