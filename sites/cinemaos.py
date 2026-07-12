@@ -13,7 +13,7 @@ from Crypto.Protocol.KDF import PBKDF2
 
 '''
 Supports:
-https://cinemaos.live/
+https://cinemaos.tech/
 '''
 
 # Haha @Cinemaos, bro… after a decade, I was busy with my life, Welcome Me Now! 😉
@@ -30,10 +30,11 @@ class Colors:
     underline = '\033[4m'
 
 # Constants
-base_url = "https://cinemaos.live/movie/watch/1272837"
+base_url = "https://cinemaos.tech/movie/watch/1272837"
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
 primary_hmac_key = "a7f3b9c2e8d4f1a6b5c9e2d7f4a8b3c6e1d9f7a4b2c8e5d3f9a6b4c1e7d2f8a5"
 secondary_hmac_key = "d3f8a5b2c9e6d1f7a4b8c5e2d9f3a6b1c7e4d8f2a9b5c3e7d4f1a8b6c2e9d5f3"
+gt = "6775dc8e702c08643385273df088c14952c590ddda02d14f"
 parsed_url = urlparse(base_url)
 default_domain = f"{parsed_url.scheme}://{parsed_url.netloc}/"
 headers = {
@@ -47,7 +48,7 @@ headers = {
 api_key = base64.b64decode("NTRlMDA0NjZhMDk2NzZkZjU3YmE1MWM0Y2EzMGIxYTY=").decode('utf-8')
 
 # Get content info
-match = re.search(r'\/cinemaos.live\/(.*?)\/watch\/(\d+)(?:\?season=(\d+)&episode=(\d+))?', base_url)
+match = re.search(r'\/cinemaos.tech\/(.*?)\/watch\/(\d+)(?:\?season=(\d+)&episode=(\d+))?', base_url)
 if match:
     content_type = match.group(1)
     content_id, season, episode = (
@@ -70,7 +71,7 @@ primary_secret = hmac.new(primary_hmac_key.encode(), message.encode(), hashlib.s
 final_secret = hmac.new(secondary_hmac_key.encode(), primary_secret.encode(), hashlib.sha256).hexdigest()
 
 # Get encrypted data
-response = requests.get(f"{default_domain}/api/providerv3?type={content_type}&tmdbId={content_id}&imdbId={imdb_id}&seasonId={season}&episodeId={episode}&t=&ry=&secret={final_secret}", headers=headers).json()
+response = requests.get(f"{default_domain}/api/providerv4?type={content_type}&tmdbId={content_id}&imdbId={imdb_id}&seasonId={season}&episodeId={episode}&t=&ry=&secret={final_secret}&_gt={gt}", headers=headers).json()
 decryption_parameters = response.get('data')
 
 # Extract hex strings from the response
