@@ -3,7 +3,7 @@ import hashlib
 import json
 import random
 import requests
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from Crypto.Cipher import AES
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -61,13 +61,9 @@ def decrypt_response(payload: str, secret: str) -> dict:
 
     key = sha256(secret.encode() + salt)
 
-    aes = AESGCM(key)
+    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
+    plaintext = cipher.decrypt_and_verify(ciphertext, tag)
 
-    plaintext = aes.decrypt(
-        iv,
-        ciphertext + tag,
-        None,
-    )
     return json.loads(plaintext.decode())
 
 
