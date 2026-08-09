@@ -87,22 +87,28 @@ def get_stream(movie_id):
     stream_token = r["token"]
 
     params = {
-        "mediaId": movie_id,
-        "mediaType": "movie",
-        "tv_slug": "",
-        "source": "mapple",
-        "apikey": API_KEY,
+        "data": {
+            "mediaId": movie_id,
+            "mediaType": "movie",
+            "tv_slug": "",
+            "source": "mapple",
+        },
+        "endpoint": "stream-encrypted",
         "requestToken": token,
-        "token": stream_token,
     }
 
+    r = s.post(
+        "https://mapple.rip/api/encrypt",
+        json=params,
+    ).json()
+    stream = r["url"]
+
     r = s.get(
-        "https://mapple.rip/api/stream",
+        f"https://mapple.rip{stream}&requestToken={token}&token={stream_token}",
         params=params,
     ).json()
-
     return r["data"]["stream_url"]
 
 
 if __name__ == "__main__":
-    print(get_stream(278))
+    print(get_stream(155))
