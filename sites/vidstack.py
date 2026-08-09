@@ -22,7 +22,7 @@ class Colors:
     underline = '\033[4m'
 
 # Constants
-base_url = "https://smashyplayer.top/#5fiwaw"
+base_url = "https://flixcdn.cyou/#qpabsb"
 user_agent = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36"
 default_domain = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(base_url))
 headers = {
@@ -49,6 +49,7 @@ decrypted_data = unpad(plaintext, AES.block_size)
 
 # Extract video URL
 stream_info = json.loads(decrypted_data)
+print(stream_info)
 video_url = stream_info.get('source')
 
 # Print results
