@@ -124,7 +124,7 @@ def main():
         FIELD_MAP["season"]: str(SEASON),
         FIELD_MAP["episode"]: str(EPISODE),
     }
-    tok_res = sess.post(f"{BASE}/backend/npminstall", json=token_body, headers=HEADERS).json()
+    tok_res = sess.post(f"{BASE}/backend/andromeda", json=token_body, headers=HEADERS).json()
 
     # 3. Request Sources
     query = {
