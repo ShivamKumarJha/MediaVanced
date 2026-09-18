@@ -12,9 +12,9 @@ TMDB_ID = 108978
 MEDIA_TYPE = "tv"
 SEASON = 4
 EPISODE = 4
-SERVER = "valstrax"  # Default server from list
+SERVER = "andromeda"  # Default server from list
 
-BASE = "https://player.zxcstream.xyz"
+BASE = "https://vidstuck.xyz"
 TMDB_API_KEY = "06f10fc8741a672af455421c239a1ffc"
 TMDB_BASE = "https://api.themoviedb.org/3"
 
@@ -35,13 +35,35 @@ FIELD_MAP = {
     "latestDate": "e16932c54356416ad739e5814b3027",
 }
 
-SERVERS: list[dict] = [
-    {"name": "Resshin", "server": "resshin", "status": "queue", "desc": "Download & Multi Audio Support"},
-    {"name": "Valstrax I", "server": "valstrax", "status": "queue", "desc": "HD Quality & Reliable"},
-    {"name": "Berkas II", "server": "berkas", "status": "queue", "desc": "4K Support & Fast"},
-    {"name": "Atlas III", "server": "atlas", "status": "queue", "desc": "HD Quality & Reliable"},
-    {"name": "Alatreon IV", "server": "alatreon", "status": "queue", "desc": "Extensive Movie & TV Library"},
-    {"name": "Daedalus VI", "server": "daedalus", "status": "queue", "desc": "Alternative"},
+SERVERS = [
+    {
+        "name": "Andromeda",
+        "status": "queue",
+        "server": "andromeda",
+        "desc": "Smooth Playback & HD",
+        "dubSupport": False,
+    },
+    {
+        "name": "Centaurus",
+        "status": "queue",
+        "server": "centaurus",
+        "desc": "Multi Audio Support",
+        "dubSupport": True,
+    },
+    {
+        "name": "Atlas",
+        "status": "queue",
+        "server": "atlas",
+        "desc": "Alternative",
+        "dubSupport": False,
+    },
+    {
+        "name": "Milky Way",
+        "status": "queue",
+        "server": "milkyway",
+        "desc": "Alternative",
+        "dubSupport": False,
+    },
 ]
 
 HEADERS = {
@@ -80,6 +102,7 @@ def decrypt_link(blob: str) -> str:
 # --------------------------------------------------------------------------- #
 def main():
     sess = requests.Session()
+    print("[INFO] Fetching metadata and resolving stream...")
 
     # 1. Fetch TMDB Metadata
     details = sess.get(f"{TMDB_BASE}/tv/{TMDB_ID}", params={"api_key": TMDB_API_KEY}).json()
@@ -101,7 +124,7 @@ def main():
         FIELD_MAP["season"]: str(SEASON),
         FIELD_MAP["episode"]: str(EPISODE),
     }
-    tok_res = sess.post(f"{BASE}/backend/whattheactualfuck", json=token_body, headers=HEADERS).json()
+    tok_res = sess.post(f"{BASE}/backend/npminstall", json=token_body, headers=HEADERS).json()
 
     # 3. Request Sources
     query = {
@@ -121,13 +144,26 @@ def main():
     if imdb_id:
         query[FIELD_MAP["imdbId"]] = imdb_id
 
-    sources = sess.get(f"{BASE}/backend_/sources/{SERVER}?{urlencode(query)}", headers=HEADERS).json()
+    sources = sess.get(f"{BASE}/backend/servers/{SERVER}?{urlencode(query)}", headers=HEADERS).json()
 
     # 4. Decrypt and Print Links
     for item in sources.get("links", []):
         if "link" in item:
-            print(f"Decrypted Link ({item.get('resolution', 'Unknown')}): {decrypt_link(item['link'])}")
+            decrypted = decrypt_link(item['link'])
 
+            # Format base URL if link is relative
+            if decrypted.startswith("/"):
+                final_link = f"{BASE}{decrypted}"
+            else:
+                final_link = decrypted
+
+            res = item.get('resolution', 'Unknown')
+            print(f"[SUCCESS] Decrypted Link ({res}): {final_link}")
+
+    # 5. Print Origin and Referer
+    print("\n[INFO] Request Configuration:")
+    print(f"[INFO] Origin:  {HEADERS['Origin']}")
+    print(f"[INFO] Referer: {HEADERS['Referer']}")
 
 if __name__ == "__main__":
     main()
